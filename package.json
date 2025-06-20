@@ -26,7 +26,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "mikro-orm:migration:create": "mikro-orm migration:create",
     "mikro-orm:migration:up": "mikro-orm migration:up",
-    "mikro-orm:migration:down": "mikro-orm migration:down"
+    "mikro-orm:migration:down": "mikro-orm migration:down",
+    "mikro-orm:migration:fresh": "mikro-orm migration:fresh"
   },
   "dependencies": {
     "@mikro-orm/core": "^6.4.16",
@@ -38,7 +39,8 @@
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
