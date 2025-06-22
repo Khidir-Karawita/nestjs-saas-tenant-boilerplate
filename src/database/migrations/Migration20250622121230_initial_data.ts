@@ -1,6 +1,6 @@
 import { Migration } from '@mikro-orm/migrations';
-import { Permission } from '../entities/permission.entity';
-import { Role } from '../entities/role.entity';
+import { Permission } from '../../entities/permission.entity';
+import { Role } from '../../entities/role.entity';
 
 export class Migration20250622121230_initial_data extends Migration {
 

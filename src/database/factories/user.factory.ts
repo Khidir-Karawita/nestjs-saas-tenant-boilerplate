@@ -1,7 +1,8 @@
 import { Factory } from '@mikro-orm/seeder';
 import { faker } from '@faker-js/faker';
-import { User } from '../entities/user.entity';
+import { User } from '../../entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { SALT_ROUNDS } from 'src/common/constants';
 export class UserFactory extends Factory<User> {
   model = User;
 
@@ -9,7 +10,7 @@ export class UserFactory extends Factory<User> {
     return {
       username: faker.person.lastName(),
       email: faker.internet.email(),
-      password: bcrypt.hashSync('password', 10),
+      password: bcrypt.hashSync('password', SALT_ROUNDS),
     };
   }
 }

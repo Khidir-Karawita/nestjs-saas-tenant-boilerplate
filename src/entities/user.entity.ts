@@ -13,7 +13,7 @@ export class User extends CustomBaseEntity {
   @Property({unique: true})
   email: string;
 
-  @Property()
+  @Property({hidden: true})
   password: string;
 
   @ManyToOne({ entity: () => Role })
