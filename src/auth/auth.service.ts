@@ -16,7 +16,10 @@ export class AuthService {
   ) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
-    const user = await this.usersService.findOneWithUsername({ username });
+    const user = await this.usersService.findOneWithUsername({
+      username,
+      options: { populate: ['role', 'role.permissions'] as never },
+    });
     if (!user) {
       throw new BadRequestException('User not found');
     }

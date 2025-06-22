@@ -1,9 +1,9 @@
 import { Migration } from '@mikro-orm/migrations';
 
-export class Migration20250622121205_init extends Migration {
+export class Migration20250622193530_init extends Migration {
 
   override async up(): Promise<void> {
-    this.addSql(`create table \`permission\` (\`id\` bigint unsigned not null auto_increment primary key, \`created_at\` date not null, \`updated_at\` date not null, \`name\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;`);
+    this.addSql(`create table \`permission\` (\`id\` bigint unsigned not null auto_increment primary key, \`created_at\` date not null, \`updated_at\` date not null, \`name\` varchar(255) not null, \`action\` varchar(255) null, \`subject\` varchar(255) null) default character set utf8mb4 engine = InnoDB;`);
     this.addSql(`alter table \`permission\` add unique \`permission_name_unique\`(\`name\`);`);
 
     this.addSql(`create table \`role\` (\`id\` bigint unsigned not null auto_increment primary key, \`created_at\` date not null, \`updated_at\` date not null, \`name\` varchar(255) not null) default character set utf8mb4 engine = InnoDB;`);

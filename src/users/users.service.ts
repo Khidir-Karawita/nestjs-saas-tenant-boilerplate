@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserRepository } from './users.repository';
@@ -35,11 +39,14 @@ export class UsersService {
   }
 
   findAll() {
-    return `This action returns all users`;
+    return this.repo.findAll();
   }
 
   findOne({ id, options }: { id: number; options?: FindOneOptions<User> }) {
-    return this.repo.findOne(id, options);
+    if (options) {
+      return this.repo.findOne(id, options);
+    }
+    return this.repo.findOne(id);
   }
   findOneWithUsername({
     username,
@@ -50,11 +57,29 @@ export class UsersService {
   }) {
     return this.repo.findOne({ username }, options);
   }
-  update({ id, updateUserDto }: { id: number; updateUserDto: UpdateUserDto }) {
-    return `This action updates a #${id} user`;
+  async update({
+    id,
+    updateUserDto,
+  }: {
+    id: number;
+    updateUserDto: UpdateUserDto;
+  }) {
+    const user = await this.repo.findOne(id);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    this.repo.assign(user, updateUserDto);
+    await this.em.flush();
+    return user;
   }
 
-  remove({ id }: { id: number }) {
-    return `This action removes a #${id} user`;
+  async remove({ id }: { id: number }) {
+    const user = await this.repo.findOne(id);
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    this.em.remove(user);
+    await this.em.flush();
+    return user;
   }
 }

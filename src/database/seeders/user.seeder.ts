@@ -6,22 +6,22 @@ import * as bcrypt from 'bcrypt';
 import { User } from '../../entities/user.entity';
 import { SALT_ROUNDS } from 'src/common/constants';
 export class UserSeeder extends Seeder {
-
   async run(em: EntityManager): Promise<void> {
     const roleUser = await em.findOne(Role, { name: 'user' })!;
     const roleAdmin = await em.findOne(Role, { name: 'admin' })!;
 
     if (!roleUser) throw new Error("Role 'user' not found");
     if (!roleAdmin) throw new Error("Role 'admin' not found");
-    new UserFactory(em).each(user => {
-      user.role = roleUser;
-    }).create(100);
+    new UserFactory(em)
+      .each((user) => {
+        user.role = roleUser;
+      })
+      .create(20);
     em.create(User, {
       username: 'admin',
       email: 'admin@admin.com',
-      password: await bcrypt.hash('paswword', SALT_ROUNDS),
+      password: await bcrypt.hash('password', SALT_ROUNDS),
       role: roleAdmin,
     });
   }
-
 }

@@ -9,10 +9,10 @@ import { UsersModule } from './users/users.module';
 import authConfig from './config/auth.config';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
-import { RolesModule } from './roles/roles.module';
 import { ValidatorModule } from './validator/validator.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import throttleConfig from './config/throttle.config';
+import { CaslModule } from './casl/casl.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -25,8 +25,8 @@ import throttleConfig from './config/throttle.config';
 
     AuthModule,
     UsersModule,
-    RolesModule,
     ValidatorModule,
+    CaslModule,
   ],
   controllers: [AppController],
   providers: [
