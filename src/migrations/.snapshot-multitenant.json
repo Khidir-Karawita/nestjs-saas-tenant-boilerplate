@@ -291,18 +291,15 @@
           "length": 255,
           "mappedType": "string"
         },
-        "role": {
-          "name": "role",
-          "type": "enum('ADMIN','USER')",
-          "unsigned": false,
+        "role_id": {
+          "name": "role_id",
+          "type": "bigint",
+          "unsigned": true,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "enumItems": [
-            "ADMIN",
-            "USER"
-          ],
-          "mappedType": "enum"
+          "length": null,
+          "mappedType": "bigint"
         }
       },
       "name": "user",
@@ -328,6 +325,16 @@
           "unique": true
         },
         {
+          "columnNames": [
+            "role_id"
+          ],
+          "composite": false,
+          "keyName": "user_role_id_index",
+          "constraint": false,
+          "primary": false,
+          "unique": false
+        },
+        {
           "keyName": "PRIMARY",
           "columnNames": [
             "id"
@@ -339,7 +346,20 @@
         }
       ],
       "checks": [],
-      "foreignKeys": {},
+      "foreignKeys": {
+        "user_role_id_foreign": {
+          "constraintName": "user_role_id_foreign",
+          "columnNames": [
+            "role_id"
+          ],
+          "localTableName": "user",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "role",
+          "updateRule": "cascade"
+        }
+      },
       "nativeEnums": {}
     }
   ],

@@ -1,12 +1,11 @@
-import { Entity, PrimaryKey, Property, ManyToOne, ManyToMany, Collection, Enum } from "@mikro-orm/core";
+import { Entity, PrimaryKey, Property, ManyToOne, ManyToMany, Collection, Enum, EntityRepositoryType } from "@mikro-orm/core";
 import { CustomBaseEntity } from "./base.entity";
+import { UserRepository } from "../users/users.repository";
+import { Role } from "./role.entity";
 
-enum UserRole {
-  ADMIN = 'ADMIN',
-  USER = 'USER',
-}
-@Entity()
+@Entity({ repository: () => UserRepository })
 export class User extends CustomBaseEntity {
+  [EntityRepositoryType]?: UserRepository;
 
   @Property({unique: true})
   username: string;
@@ -17,6 +16,6 @@ export class User extends CustomBaseEntity {
   @Property()
   password: string;
 
-  @Enum(() => UserRole)
-  role: UserRole;
+  @ManyToOne({ entity: () => Role })
+  role: Role;
 }

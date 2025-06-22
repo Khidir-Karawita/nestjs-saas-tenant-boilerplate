@@ -2,12 +2,11 @@ import { Migration } from '@mikro-orm/migrations';
 import { Permission } from '../entities/permission.entity';
 import { Role } from '../entities/role.entity';
 
-export class Migration20250620185710_inital_data extends Migration {
+export class Migration20250622121230_initial_data extends Migration {
 
   override async up(): Promise<void> {
     const em = this.getEntityManager();
 
-    const now = new Date();
     
     const createUserPermission = em.create(Permission, { 
       name: 'create:user',
