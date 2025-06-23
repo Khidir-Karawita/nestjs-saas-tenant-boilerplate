@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -15,6 +16,7 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
+  private readonly logger = new Logger(UsersService.name);
   constructor(
     private readonly repo: UserRepository,
     @InjectRepository(Role)
@@ -35,6 +37,7 @@ export class UsersService {
       role,
     });
     await this.em.flush();
+    this.logger.log('new User created', user);
     return user;
   }
 
@@ -70,6 +73,7 @@ export class UsersService {
     }
     this.repo.assign(user, updateUserDto);
     await this.em.flush();
+    this.logger.log('User updated', user);
     return user;
   }
 
@@ -80,6 +84,7 @@ export class UsersService {
     }
     this.em.remove(user);
     await this.em.flush();
+    this.logger.log('User deleted', user);
     return user;
   }
 }

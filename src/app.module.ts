@@ -3,6 +3,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import databaseConfig from './config/database.config';
+import pinoLoggerConfig from './config/pino-logger.config';
+
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
@@ -13,6 +15,7 @@ import { ValidatorModule } from './validator/validator.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import throttleConfig from './config/throttle.config';
 import { CaslModule } from './casl/casl.module';
+import { LoggerModule } from 'pino-nestjs';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -27,6 +30,7 @@ import { CaslModule } from './casl/casl.module';
     UsersModule,
     ValidatorModule,
     CaslModule,
+    LoggerModule.forRootAsync(pinoLoggerConfig.asProvider()),
   ],
   controllers: [AppController],
   providers: [
