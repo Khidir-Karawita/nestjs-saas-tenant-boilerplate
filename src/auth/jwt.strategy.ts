@@ -20,11 +20,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    console.log('payload', payload);
     const user = await this.usersService.findOne({
       id: payload.sub,
       options: {
-        populate: ['role', 'role.permissions'] as never,
+        populate: ['role', 'role.permissions', 'tenant'] as never,
         disableIdentityMap: true,
       },
     });

@@ -1,8 +1,8 @@
-import { MariaDbDriver } from "@mikro-orm/mariadb";
-import { Migrator } from "@mikro-orm/migrations";
-import { Options } from "@mikro-orm/core";
-import  dotenv from 'dotenv';
-import { SeedManager } from "@mikro-orm/seeder";
+import { MariaDbDriver } from '@mikro-orm/mariadb';
+import { Migrator } from '@mikro-orm/migrations';
+import { Options } from '@mikro-orm/core';
+import dotenv from 'dotenv';
+import { SeedManager } from '@mikro-orm/seeder';
 
 const envFiles = ['.env.development.local', '.env'];
 dotenv.config({ path: envFiles });
@@ -16,23 +16,25 @@ const config: Options = {
   entities: ['./dist/entities/**/*.js'],
   entitiesTs: ['./src/entities/**/*.ts'],
   seeder: {
-    path: process.env.MIKRO_ORM_SEEDER_PATH || './dist/database/seeders', 
-    pathTs: process.env.MIKRO_ORM_SEEDER_PATH_TS || './src/database/seeders', 
-    defaultSeeder: process.env.MIKRO_ORM_SEEDER_DEFAULT_SEEDER || 'DatabaseSeeder', 
-    glob: process.env.MIKRO_ORM_SEEDER_GLOB || '!(*.d).{js,ts}', 
-    emit: (process.env.MIKRO_ORM_SEEDER_EMIT as 'ts' | 'js' | undefined) || 'ts', 
-    fileName: (className: string) => className.toLowerCase() + '.seeder', 
+    path: process.env.MIKRO_ORM_SEEDER_PATH || './dist/database/seeders',
+    pathTs: process.env.MIKRO_ORM_SEEDER_PATH_TS || './src/database/seeders',
+    defaultSeeder:
+      process.env.MIKRO_ORM_SEEDER_DEFAULT_SEEDER || 'DatabaseSeeder',
+    glob: process.env.MIKRO_ORM_SEEDER_GLOB || '!(*.d).{js,ts}',
+    emit:
+      (process.env.MIKRO_ORM_SEEDER_EMIT as 'ts' | 'js' | undefined) || 'ts',
+    fileName: (className: string) => className.toLowerCase() + '.seeder',
   },
   migrations: {
-    path: process.env.MIKRO_ORM_MIGRATION_PATH || './dist/database/migrations', 
-    pathTs: process.env.MIKRO_ORM_MIGRATION_PATH_TS || './src/database/migrations', 
-    glob: process.env.MIKRO_ORM_MIGRATION_GLOB || '!(*.d).{js,ts}', 
+    path: process.env.MIKRO_ORM_MIGRATION_PATH || './dist/database/migrations',
+    pathTs:
+      process.env.MIKRO_ORM_MIGRATION_PATH_TS || './src/database/migrations',
+    glob: process.env.MIKRO_ORM_MIGRATION_GLOB || '!(*.d).{js,ts}',
   },
+
   driver: MariaDbDriver,
-  extensions: [Migrator,SeedManager],
+  extensions: [Migrator, SeedManager],
   debug: process.env.NODE_ENV !== 'production',
-  
 };
 
 export default config;
-

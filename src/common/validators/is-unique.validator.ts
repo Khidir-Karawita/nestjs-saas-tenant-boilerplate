@@ -4,7 +4,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { EntityManager } from '@mikro-orm/core';
+import { EntityManager } from '@mikro-orm/mariadb';
 
 @ValidatorConstraint({ name: 'IsUniqueConstraint', async: true })
 @Injectable()

@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -17,7 +18,6 @@ import { PoliciesGuard } from 'src/common/guards/policies.guard';
 import { ReadAnyUserPolicyHandler } from './policies/read-any-user.policy';
 import { UpdateUserPolicyHandler } from './policies/update-user.policy';
 import { DeleteUserPolicyHandler } from './policies/delete-user.policy';
-
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

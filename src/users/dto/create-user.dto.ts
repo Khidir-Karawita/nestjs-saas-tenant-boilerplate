@@ -24,6 +24,9 @@ export class CreateUserDto {
   @MinLength(6)
   password: string;
 
-  @Exclude()
-  role?: any;
+  @IsString()
+  @MinLength(3)
+  @IsNotEmpty()
+  @Validate(IsUnique, ['Tenant', 'domain'])
+  domain: string;
 }

@@ -11,6 +11,7 @@ import {
 import { CustomBaseEntity } from './base.entity';
 import { UserRepository } from '../users/users.repository';
 import { Role } from './role.entity';
+import { Tenant } from './tenant.entity';
 
 @Entity({ repository: () => UserRepository })
 export class User extends CustomBaseEntity {
@@ -27,4 +28,7 @@ export class User extends CustomBaseEntity {
 
   @ManyToOne({ entity: () => Role })
   role: Role;
+
+  @ManyToOne({ entity: () => Tenant })
+  tenant: Tenant;
 }

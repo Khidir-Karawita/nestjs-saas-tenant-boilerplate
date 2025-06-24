@@ -13,6 +13,7 @@ import { EntityManager, EntityRepository } from '@mikro-orm/mariadb';
 import { Role } from 'src/entities/role.entity';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import * as bcrypt from 'bcrypt';
+import { Tenant } from 'src/entities/tenant.entity';
 
 @Injectable()
 export class UsersService {
@@ -26,7 +27,7 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     const role = await this.roleRepo.findOne({ name: 'user' });
-    const { password, ...rest } = createUserDto;
+    const { password, domain, ...rest } = createUserDto;
     const hashedPassword = await bcrypt.hash(password, 10);
     if (!role) {
       throw new InternalServerErrorException();
@@ -35,6 +36,7 @@ export class UsersService {
       ...rest,
       password: hashedPassword,
       role,
+      tenant: this.em.create(Tenant, new Tenant(domain)),
     });
     await this.em.flush();
     this.logger.log('new User created', user);

@@ -14,6 +14,7 @@ import { LoggedUser } from 'src/common/decorators/requests/logged-user.decorator
 import { User } from 'src/entities/user.entity';
 import { Throttle } from '@nestjs/throttler';
 import { UsersService } from 'src/users/users.service';
+import { SkipTenant } from 'src/common/decorators/metadata/skip-tenant.decorator';
 
 @Controller('auth')
 export class AuthController {

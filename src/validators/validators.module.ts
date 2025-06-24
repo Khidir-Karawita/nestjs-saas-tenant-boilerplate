@@ -11,4 +11,4 @@ import { User } from 'src/entities/user.entity';
   providers: [IsUnique],
   exports: [IsUnique],
 })
-export class ValidatorModule {}
+export class ValidatorsModule {}
