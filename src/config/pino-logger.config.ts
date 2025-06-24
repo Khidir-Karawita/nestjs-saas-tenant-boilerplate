@@ -20,7 +20,7 @@ export default registerAs('pinoLogger', () => ({
     }),
     genReqId: (req) => req.headers['x-correlation-id'] || uuidv4(),
     serializers: {
-      req: (req: Request) => {
+      req: (req) => {
         return {
           id: req.id,
           method: req.method,
@@ -28,6 +28,9 @@ export default registerAs('pinoLogger', () => ({
           userAgent: req.headers['user-agent'],
           language: req.headers['accept-language'],
           ip: req.ip,
+          body: req.raw.body,
+          query: req.query,
+          params: req.params,
         };
       },
       res: (res) => {
