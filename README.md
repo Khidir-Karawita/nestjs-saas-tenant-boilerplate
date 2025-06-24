@@ -2,97 +2,639 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# NestJS Single-Tenant Skeleton
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+A comprehensive NestJS boilerplate for building secure, scalable single-tenant applications with built-in authentication, authorization, and tenant isolation.
 
-## Description
+## Table of Contents
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- [Project Structure](#project-structure)
+- [Features](#features)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Database Setup](#database-setup)
+  - [Running the Application](#running-the-application)
+- [Core Features Explained](#core-features-explained)
+  - [Single-Tenant Architecture](#single-tenant-architecture)
+  - [Authentication](#authentication)
+  - [Authorization with CASL](#authorization-with-casl)
+  - [Database with MikroORM](#database-with-mikroorm)
+  - [Migrations and Seeding](#migrations-and-seeding)
+- [Advanced Features](#advanced-features)
+  - [Custom Validators](#custom-validators)
+  - [Configuration System](#configuration-system)
+  - [Rate Limiting](#rate-limiting)
+  - [Structured Logging](#structured-logging)
+- [Contributing](#contributing)
+- [License](#license)
 
-## Project setup
+## Project Structure
+
+```
+src/
+├── app.module.ts         # Main application module
+├── main.ts              # Application entry point
+├── auth/                # Authentication module
+│   ├── auth.controller.ts   # Authentication endpoints
+│   ├── auth.service.ts      # Authentication business logic
+│   ├── jwt.strategy.ts      # JWT authentication strategy
+│   └── local.strategy.ts    # Local authentication strategy
+├── casl/                # Authorization module
+│   └── casl.module.ts       # CASL configuration
+├── common/              # Shared utilities and decorators
+│   ├── decorators/         # Custom decorators
+│   ├── factories/          # Factory classes
+│   ├── guards/             # Custom guards
+│   ├── interfaces/         # TypeScript interfaces
+│   └── validators/         # Custom validators
+├── config/              # Configuration files
+│   ├── auth.config.ts      # Authentication configuration
+│   ├── database.config.ts  # Database configuration
+│   ├── mikro-orm.config.ts # MikroORM configuration
+│   └── tenant.config.ts    # Tenant configuration
+├── database/            # Migrations and seeders
+│   ├── migrations/         # Database migrations
+│   └── seeders/            # Database seeders
+├── entities/            # Database entities
+│   ├── base.entity.ts      # Base entity class
+│   ├── organization.entity.ts
+│   ├── permission.entity.ts
+│   ├── role.entity.ts
+│   ├── tenant.entity.ts
+│   └── user.entity.ts
+├── organizations/       # Organization module
+├── tenants/             # Tenant management module
+│   ├── tenants.module.ts   # Tenant module configuration
+│   └── tenants.interceptor.ts # Tenant filtering interceptor
+├── users/               # User management module
+│   ├── users.controller.ts # User endpoints
+│   ├── users.service.ts    # User business logic
+│   ├── dto/                # Data transfer objects
+│   └── policies/           # User-related policies
+└── validators/          # Custom validators module
+```
+
+## Features
+
+- **Single-Tenant Architecture**: Complete tenant isolation with database filtering
+- **Authentication**: JWT-based authentication with Passport.js
+- **Authorization**: Role-based access control using CASL
+- **Database**: MikroORM with MariaDB integration
+- **Migrations & Seeding**: Built-in database migration and seeding support
+- **Validation**: Request validation using class-validator
+- **Logging**: Structured logging with Pino
+- **Rate Limiting**: API rate limiting with @nestjs/throttler
+- **API Versioning**: Built-in API versioning
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v18+)
+- Yarn
+- MariaDB (or MySQL)
+
+### Installation
 
 ```bash
+# Clone the repository
+$ git clone https://github.com/yourusername/nestjs-singletenant-skeleton.git
+
+# Install dependencies
+$ cd nestjs-singletenant-skeleton
 $ yarn install
+
+# Configure environment variables
+$ cp .env.development.local.example .env.development.local
 ```
 
-## Compile and run the project
+Edit `.env.development.local` to set your database credentials and other configuration options.
+
+### Database Setup
 
 ```bash
-# development
-$ yarn run start
+# Run migrations
+$ yarn mikro-orm:migration:up
 
-# watch mode
-$ yarn run start:dev
-
-# production mode
-$ yarn run start:prod
+# Seed the database for testing purposes only
+$ yarn mikro-orm:seeder:run
 ```
 
-## Run tests
+### Running the Application
 
 ```bash
-# unit tests
-$ yarn run test
+# Development mode
+$ yarn start:dev
 
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+# Production mode
+$ yarn build
+$ yarn start:prod
 ```
 
-## Deployment
+## Core Features Explained
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### Single-Tenant Architecture
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+This boilerplate implements a single-tenant architecture where each tenant's data is isolated using MikroORM filters. The tenant context is automatically determined from the authenticated user.
+
+#### Tenant Configuration
+
+The tenant system is designed to be selective about which entities are subject to tenant filtering. This is controlled through the tenant configuration:
+
+```typescript
+// src/config/tenant.config.ts
+export default registerAs('tenant', () => ({
+  entities: [User, Organization], // Only these entities will have tenant filtering applied
+  domain: process.env.TENANT_DOMAIN,
+}));
+```
+
+By specifying entities in the `entities` array, you control which data models are tenant-aware. This allows you to have both tenant-specific and global (shared across all tenants) data in your application.
+
+#### Tenant Interceptor
+
+The `TenantInterceptor` automatically applies tenant filtering to database queries, but only for the entities specified in the tenant configuration. It also respects the `@Public()` decorator to skip tenant filtering for public routes:
+
+```typescript
+@Injectable()
+export class TenantInterceptor implements NestInterceptor {
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly em: EntityManager,
+    @Inject(tenantConfig.KEY)
+    private readonly tenantConfigService: ConfigType<typeof tenantConfig>,
+  ) {}
+
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const request = context.switchToHttp().getRequest();
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    const { user } = request;
+
+    // Skip tenant filtering for public routes
+    if (isPublic) return next.handle();
+    
+    if (!user) throw new InternalServerErrorException('User not found');
+    const tenant = user.tenant as Tenant;
+    if (!tenant) throw new InternalServerErrorException('Tenant not found');
+
+    this.em.addFilter(
+      'tenant',
+      (args) => ({ tenant: args.tenantId }),
+      this.tenantConfigService.entities, // Only apply to these entities
+    );
+
+    // Set the current tenant ID for the filter
+    this.em.setFilterParams('tenant', { tenantId: tenant.id });
+    return next.handle();
+  }
+}
+```
+
+### Authentication
+
+The authentication system is built using Passport.js with JWT and local strategies.
+
+#### Authentication Controller Example
+
+```typescript
+@Controller('auth')
+export class AuthController {
+  @Public()
+  @UseGuards(LocalAuthGuard)
+  @Post('login')
+  async login(@LoggedUser() user: User) {
+    return this.authService.login(user);
+  }
+
+  @Get('profile')
+  getProfile(@LoggedUser() user: User) {
+    return this.usersService.findOne({
+      id: user.id,
+    });
+  }
+
+  @Public()
+  @Post('register')
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  async register(@Body() body: CreateUserDto) {
+    return this.authService.register(body);
+  }
+}
+```
+
+#### Public Routes with @Public Decorator
+
+The boilerplate includes a `@Public()` decorator to mark routes that should be accessible without authentication:
+
+```typescript
+// Definition of the decorator
+export const IS_PUBLIC_KEY = 'isPublic';
+export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
+```
+
+This decorator works with the JWT authentication guard to bypass authentication checks:
+
+```typescript
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {
+  constructor(private reflector: Reflector) {
+    super();
+  }
+
+  canActivate(context: ExecutionContext) {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (isPublic) {
+      return true;
+    }
+    return super.canActivate(context);
+  }
+}
+```
+
+Use the `@Public()` decorator on any route that should be accessible without authentication, such as login, registration, or public API endpoints. Public routes will also bypass the tenant interceptor since they don't have an authenticated user context.
+
+#### Request Decorators
+
+The boilerplate includes useful request decorators to simplify access to the authenticated user:
+
+##### @LoggedUser Decorator
+
+The `@LoggedUser()` decorator provides easy access to the currently authenticated user in your controllers:
+
+```typescript
+// Definition of the decorator
+export const LoggedUser = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest();
+    return request.user;
+  },
+);
+```
+
+Usage in controllers:
+
+```typescript
+@Get('profile')
+getProfile(@LoggedUser() user: User) {
+  // user is the authenticated user from the request
+  return this.usersService.findOne({
+    id: user.id,
+  });
+}
+```
+
+This decorator eliminates the need to manually extract the user from the request object, making your controller methods cleaner and more focused.
+
+#### Login Example
+
+```typescript
+// POST /auth/login
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+```
+
+Response:
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+### Authorization with CASL
+
+The boilerplate uses CASL for fine-grained authorization. Policies are defined for each action on resources, allowing for sophisticated permission control.
+
+#### Policy System Architecture
+
+The policy system consists of several components working together:
+
+1. **Policy Handlers**: Classes that implement the `IPolicyHandler` interface to define authorization logic
+2. **CheckPolicies Decorator**: A custom decorator that attaches policy handlers to routes
+3. **PoliciesGuard**: A guard that evaluates policies before allowing access to routes
+4. **CASL Ability Factory**: Creates ability objects that define what actions users can perform
+
+#### Policy Handler Example
+
+Policy handlers can implement complex authorization logic, including ownership checks:
+
+```typescript
+export class ReadUserPolicyHandler implements IPolicyHandler {
+  handle(ability: AppAbility, user: User, request: Request) {
+    return (
+      // Allow if user has general read permission for all users
+      ability.can(Actions.Read, Subjects.User) ||
+      // Allow if user has permission to read their own data and is requesting their own record
+      (ability.can(Actions.ReadOwn, Subjects.User) &&
+        user.id === parseInt(request.params.id))
+    );
+  }
+}
+```
+
+#### CheckPolicies Decorator
+
+The `@CheckPolicies()` decorator attaches policy handlers to routes:
+
+```typescript
+// Definition of the decorator
+export const CHECK_POLICIES_KEY = 'checkPolicy';
+export const CheckPolicies = (...handlers: PolicyHandler[]) =>
+  SetMetadata(CHECK_POLICIES_KEY, handlers);
+```
+
+#### PoliciesGuard Implementation
+
+The `PoliciesGuard` evaluates policies before allowing access to routes:
+
+```typescript
+@Injectable()
+export class PoliciesGuard implements CanActivate {
+  constructor(
+    private reflector: Reflector,
+    private caslAbilityFactory: CaslAbilityFactory,
+  ) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const policyHandlers =
+      this.reflector.get<PolicyHandler[]>(
+        CHECK_POLICIES_KEY,
+        context.getHandler(),
+      ) || [];
+
+    const { user } = context.switchToHttp().getRequest();
+    const ability = this.caslAbilityFactory.createForUser(user);
+
+    return policyHandlers.every((handler) =>
+      this.execPolicyHandler(
+        handler,
+        ability,
+        user,
+        context.switchToHttp().getRequest(),
+      ),
+    );
+  }
+
+  private execPolicyHandler(handler, ability, user, request) {
+    if (typeof handler === 'function') {
+      return handler(ability, user, request);
+    }
+    return handler.handle(ability, user, request);
+  }
+}
+```
+
+#### Usage in Controller
+
+```typescript
+@Get(':id')
+@UseGuards(PoliciesGuard)
+@CheckPolicies(new ReadUserPolicyHandler())
+findOne(@Param('id') id: string) {
+  return this.usersService.findOne({
+    id: +id,
+    options: { populate: ['role', 'role.permissions'] as never }
+  });
+}
+```
+
+### Database with MikroORM
+
+The boilerplate uses MikroORM with MariaDB for database operations, providing a powerful ORM solution with features like entity management, migrations, and seeding.
+
+#### Base Entity
+
+All entities extend the `CustomBaseEntity` which provides common fields and functionality:
+
+```typescript
+export abstract class CustomBaseEntity {
+  [OptionalProps]?: 'createdAt' | 'updatedAt';
+
+  @PrimaryKey({ type: new BigIntType('bigint') })
+  id: number;
+
+  @Property({ type: 'date' })
+  createdAt = new Date();
+
+  @Property({ onUpdate: () => new Date(), type: 'date' })
+  updatedAt = new Date();
+}
+```
+
+#### Entity Examples
+
+**User Entity:**
+
+```typescript
+@Entity()
+export class User extends CustomBaseEntity {
+  @Property({ unique: true })
+  email: string;
+
+  @Property({ hidden: true })
+  password: string;
+
+  @ManyToOne(() => Role)
+  role: Role;
+
+  @ManyToOne(() => Tenant)
+  tenant: Tenant;
+}
+```
+
+**Tenant Entity:**
+
+```typescript
+@Entity()
+export class Tenant extends CustomBaseEntity {
+  constructor(domain: string) {
+    super();
+    this.domain = domain;
+  }
+
+  @Property({ unique: true })
+  domain: string;
+
+  @Property({ nullable: true })
+  isActive: boolean = true;
+
+  @OneToMany(() => Organization, (organization) => organization.tenant, {
+    cascade: [Cascade.REMOVE],
+  })
+  organizations = new Collection<Organization>(this);
+
+  @OneToMany(() => User, (user) => user.tenant, {
+    cascade: [Cascade.REMOVE],
+  })
+  users = new Collection<User>(this);
+}
+```
+
+### Migrations and Seeding
+
+The boilerplate includes support for database migrations and seeding.
 
 ```bash
-$ yarn install -g @nestjs/mau
-$ mau deploy
+# Create a migration
+$ yarn mikro-orm:migration:create
+
+# Run migrations
+$ yarn mikro-orm:migration:up
+
+# Create a seeder
+$ yarn mikro-orm:seeder:create
+
+# Run seeders
+$ yarn mikro-orm:seeder:run
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Advanced Features
 
-## Resources
+### Custom Validators
 
-Check out a few resources that may come in handy when working with NestJS:
+The boilerplate includes custom validators for data validation. For example, the `IsUnique` validator checks if a value already exists in the database:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```typescript
+@ValidatorConstraint({ name: 'IsUniqueConstraint', async: true })
+@Injectable()
+export class IsUnique implements ValidatorConstraintInterface {
+  constructor(private readonly em: EntityManager) {}
 
-## Support
+  async validate(value: any, args?: ValidationArguments): Promise<boolean> {
+    const [tableName, column] = args?.constraints as string[];
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+    const dataExist = await this.em
+      .getRepository(tableName)
+      .findOne({ [column]: value });
+    return !dataExist;
+  }
 
-## Stay in touch
+  defaultMessage(validationArguments: ValidationArguments): string {
+    const field = validationArguments.property;
+    return `${field} is already exist.`;
+  }
+}
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Usage in DTOs:
+
+```typescript
+export class CreateUserDto {
+  @IsEmail()
+  @Validate(IsUnique, ['User', 'email'], {
+    message: 'Email already exists',
+  })
+  email: string;
+
+  @IsString()
+  @MinLength(8)
+  password: string;
+}
+```
+
+### Configuration System
+
+The boilerplate uses NestJS's ConfigModule for managing environment-specific configuration:
+
+```typescript
+// Example configuration factory
+export default registerAs('database', () => ({
+  host: process.env.DATABASE_HOST,
+  port: parseInt(process.env.DATABASE_PORT, 10) || 3306,
+  username: process.env.DATABASE_USERNAME,
+  password: process.env.DATABASE_PASSWORD,
+  database: process.env.DATABASE_NAME,
+  entities: ['./dist/entities/**/*.js'],
+  entitiesTs: ['./src/entities/**/*.ts'],
+}));
+```
+
+### Rate Limiting
+
+The application includes rate limiting to protect against brute force attacks:
+
+```typescript
+// In app.module.ts
+ThrottlerModule.forRootAsync(throttleConfig.asProvider()),
+
+// Global guard application
+{
+  provide: APP_GUARD,
+  useClass: ThrottlerGuard,
+},
+```
+
+### Structured Logging
+
+The boilerplate uses Pino for structured logging:
+
+```typescript
+// In main.ts
+app.useLogger(app.get(Logger));
+
+// In app.module.ts
+LoggerModule.forRootAsync(pinoLoggerConfig.asProvider()),
+```
+
+## Project Structure
+
+```
+src/
+├── app.module.ts         # Main application module
+├── main.ts              # Application entry point
+├── auth/                # Authentication module
+│   ├── auth.controller.ts   # Authentication endpoints
+│   ├── auth.service.ts      # Authentication business logic
+│   ├── jwt.strategy.ts      # JWT authentication strategy
+│   └── local.strategy.ts    # Local authentication strategy
+├── casl/                # Authorization module
+│   └── casl.module.ts       # CASL configuration
+├── common/              # Shared utilities and decorators
+│   ├── decorators/         # Custom decorators
+│   ├── factories/          # Factory classes
+│   ├── guards/             # Custom guards
+│   ├── interfaces/         # TypeScript interfaces
+│   └── validators/         # Custom validators
+├── config/              # Configuration files
+│   ├── auth.config.ts      # Authentication configuration
+│   ├── database.config.ts  # Database configuration
+│   ├── mikro-orm.config.ts # MikroORM configuration
+│   └── tenant.config.ts    # Tenant configuration
+├── database/            # Migrations and seeders
+│   ├── migrations/         # Database migrations
+│   └── seeders/            # Database seeders
+├── entities/            # Database entities
+│   ├── base.entity.ts      # Base entity class
+│   ├── organization.entity.ts
+│   ├── permission.entity.ts
+│   ├── role.entity.ts
+│   ├── tenant.entity.ts
+│   └── user.entity.ts
+├── organizations/       # Organization module
+├── tenants/             # Tenant management module
+│   ├── tenants.module.ts   # Tenant module configuration
+│   └── tenants.interceptor.ts # Tenant filtering interceptor
+├── users/               # User management module
+│   ├── users.controller.ts # User endpoints
+│   ├── users.service.ts    # User business logic
+│   ├── dto/                # Data transfer objects
+│   └── policies/           # User-related policies
+└── validators/          # Custom validators module
+```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+This project is [MIT licensed](LICENSE).
