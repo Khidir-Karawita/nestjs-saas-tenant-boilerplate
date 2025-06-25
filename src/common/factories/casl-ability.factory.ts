@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { User } from 'src/entities/user.entity';
 import { createMongoAbility, MongoAbility, RawRuleOf } from '@casl/ability';
-import { Permission } from 'src/entities/permission.entity';
 
 export enum Subjects {
   User = 'User',
