@@ -110,8 +110,8 @@ Migrations are used to set up the database schema and initialize data:
 
 - Node.js (v18+)
 - Yarn
-- MariaDB (or MySQL)
-
+- MariaDB
+  
 ### Installation
 
 ```bash
