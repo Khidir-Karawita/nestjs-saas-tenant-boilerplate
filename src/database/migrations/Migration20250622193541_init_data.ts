@@ -135,6 +135,73 @@ export class Migration20250622193541_init_data extends Migration {
       subject: 'Role',
     });
 
+    const createOrganizationPermission = em.create(Permission, {
+      name: 'create:organization',
+      action: 'create',
+      subject: 'Organization',
+    });
+    const readOrganizationPermission = em.create(Permission, {
+      name: 'read:organization',
+      action: 'read',
+      subject: 'Organization',
+    });
+    const updateOrganizationPermission = em.create(Permission, {
+      name: 'update:organization',
+      action: 'update',
+      subject: 'Organization',
+    });
+    const deleteOrganizationPermission = em.create(Permission, {
+      name: 'delete:organization',
+      action: 'delete',
+      subject: 'Organization',
+    });
+
+    const createAnyOrganizationPermission = em.create(Permission, {
+      name: 'createAny:organization',
+      action: 'createAny',
+      subject: 'Organization',
+    });
+    const readAnyOrganizationPermission = em.create(Permission, {
+      name: 'readAny:organization',
+      action: 'readAny',
+      subject: 'Organization',
+    });
+    const readOneOrganizationPermission = em.create(Permission, {
+      name: 'readOne:organization',
+      action: 'readOne',
+      subject: 'Organization',
+    });
+    const readOwnOrganizationPermission = em.create(Permission, {
+      name: 'readOwn:organization',
+      action: 'readOwn',
+      subject: 'Organization',
+    });
+    const updateAnyOrganizationPermission = em.create(Permission, {
+      name: 'updateAny:organization',
+      action: 'updateAny',
+      subject: 'Organization',
+    });
+    const updateOneOrganizationPermission = em.create(Permission, {
+      name: 'updateOne:organization',
+      action: 'updateOne',
+      subject: 'Organization',
+    });
+    const updateOwnOrganizationPermission = em.create(Permission, {
+      name: 'updateOwn:organization',
+      action: 'updateOwn',
+      subject: 'Organization',
+    });
+    const deleteAnyOrganizationPermission = em.create(Permission, {
+      name: 'deleteAny:organization',
+      action: 'deleteAny',
+      subject: 'Organization',
+    });
+    const deleteOneOrganizationPermission = em.create(Permission, {
+      name: 'deleteOne:organization',
+      action: 'deleteOne',
+      subject: 'Organization',
+    });
+
     await em.persistAndFlush([
       createUserPermission,
       readUserPermission,
@@ -161,6 +228,19 @@ export class Migration20250622193541_init_data extends Migration {
       updateOneRolePermission,
       deleteAnyRolePermission,
       deleteOneRolePermission,
+      createOrganizationPermission,
+      readOrganizationPermission,
+      updateOrganizationPermission,
+      deleteOrganizationPermission,
+      createAnyOrganizationPermission,
+      readAnyOrganizationPermission,
+      readOneOrganizationPermission,
+      readOwnOrganizationPermission,
+      updateAnyOrganizationPermission,
+      updateOneOrganizationPermission,
+      updateOwnOrganizationPermission,
+      deleteAnyOrganizationPermission,
+      deleteOneOrganizationPermission,
     ]);
 
     const adminRole = em.create(Role, {
@@ -193,9 +273,25 @@ export class Migration20250622193541_init_data extends Migration {
       updateOneRolePermission,
       deleteAnyRolePermission,
       deleteOneRolePermission,
+      createOrganizationPermission,
+      readOrganizationPermission,
+      updateOrganizationPermission,
+      deleteOrganizationPermission,
+      createAnyOrganizationPermission,
+      readAnyOrganizationPermission,
+      readOneOrganizationPermission,
+      updateAnyOrganizationPermission,
+      updateOneOrganizationPermission,
+      deleteAnyOrganizationPermission,
+      deleteOneOrganizationPermission,
     );
 
-    userRole.permissions.add(readOwnUserPermission, updateOwnUserPermission);
+    userRole.permissions.add(
+      readOwnUserPermission,
+      updateOwnUserPermission,
+      readOrganizationPermission,
+      readOwnOrganizationPermission,
+    );
 
     await em.persistAndFlush([adminRole, userRole]);
   }

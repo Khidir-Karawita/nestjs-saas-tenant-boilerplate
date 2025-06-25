@@ -7,6 +7,7 @@ export enum Subjects {
   User = 'User',
   Role = 'Role',
   Permission = 'Permission',
+  Organization = 'Organization',
 }
 export enum Actions {
   Manage = 'manage',
