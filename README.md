@@ -246,9 +246,34 @@ async create(createOrganizationDto: CreateOrganizationDto, tenant: Tenant) {
 
 This ensures that all created entities are properly associated with the current user's tenant.
 
+#### Tenant Control Decorators
+
+The boilerplate provides two decorators to control tenant filtering behavior:
+
+1. **@Public()**: Skips both authentication and tenant filtering for routes that should be publicly accessible.
+2. **@SkipTenant()**: Skips only tenant filtering but still requires authentication. Useful for admin routes that need to access data across tenants.
+
+```typescript
+// Skip tenant decorator definition
+export const SKIP_TENANT_KEY = 'skipTenant';
+export const SkipTenant = () => SetMetadata(SKIP_TENANT_KEY, true);
+```
+
+Usage example:
+
+```typescript
+// Skip tenant filtering but still require authentication
+@SkipTenant()
+@Get('admin/all-organizations')
+findAllAcrossTenants() {
+  // This will return organizations from all tenants
+  return this.organizationsService.findAll();
+}
+```
+
 #### Tenant Interceptor
 
-The `TenantInterceptor` automatically applies tenant filtering to database queries, but only for the entities specified in the tenant configuration. It also respects the `@Public()` decorator to skip tenant filtering for public routes:
+The `TenantInterceptor` automatically applies tenant filtering to database queries, but only for the entities specified in the tenant configuration. It respects both the `@Public()` and `@SkipTenant()` decorators:
 
 ```typescript
 @Injectable()
@@ -266,9 +291,17 @@ export class TenantInterceptor implements NestInterceptor {
       context.getHandler(),
       context.getClass(),
     ]);
-    const { user } = request;
 
     if (isPublic) return next.handle();
+
+    const shouldSkipTenant = this.reflector.getAllAndOverride<boolean>(
+      SKIP_TENANT_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+    if (shouldSkipTenant) return next.handle();
+
+    const { user } = request;
+
     if (!user) throw new InternalServerErrorException('User not found');
     const tenant = user.tenant as Tenant;
     if (!tenant) throw new InternalServerErrorException('Tenant not found');
