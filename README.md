@@ -2,7 +2,7 @@
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>
 
-# NestJS Single-Tenant Skeleton
+# NestJS SaaS Tenant Boilerplate
 
 A comprehensive NestJS boilerplate for building secure, scalable single-tenant applications with built-in authentication, authorization, and tenant isolation.
 
@@ -16,7 +16,7 @@ A comprehensive NestJS boilerplate for building secure, scalable single-tenant a
   - [Database Setup](#database-setup)
   - [Running the Application](#running-the-application)
 - [Core Features Explained](#core-features-explained)
-  - [Single-Tenant Architecture](#single-tenant-architecture)
+  - [Single-DB-Tenant Architecture](#single-db-tenant-architecture)
   - [Authentication](#authentication)
   - [Authorization with CASL](#authorization-with-casl)
   - [Database with MikroORM](#database-with-mikroorm)
@@ -94,7 +94,7 @@ Migrations are used to set up the database schema and initialize data:
 
 ## Features
 
-- **Single-Tenant Architecture**: Complete tenant isolation with database filtering
+- **Single-DB-Tenant Architecture**: Complete tenant isolation with database filtering
 - **Authentication**: JWT-based authentication with Passport.js
 - **Authorization**: Role-based access control using CASL
 - **Database**: MikroORM with MariaDB integration
@@ -151,9 +151,9 @@ $ yarn start:prod
 
 ## Core Features Explained
 
-### Single-Tenant Architecture
+### Single-DB-Tenant Architecture
 
-The boilerplate implements a single-tenant architecture where each tenant's data is isolated using MikroORM filters.
+The boilerplate implements a single-DB-tenant architecture where each tenant's data is isolated using MikroORM filters.
 
 #### Tenant Configuration
 
