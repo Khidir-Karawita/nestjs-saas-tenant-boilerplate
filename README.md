@@ -44,8 +44,10 @@ src/
 │   └── casl.module.ts       # CASL configuration
 ├── common/              # Shared utilities and decorators
 │   ├── decorators/         # Custom decorators
-│   ├── factories/          # Factory classes
-│   ├── guards/             # Custom guards
+│   │   ├── metadata/          # Metadata decorators (@Public, @CheckPolicies)
+│   │   └── requests/          # Request decorators (@LoggedUser, @Tenant)
+│   ├── factories/          # Factory classes (CaslAbilityFactory)
+│   ├── guards/             # Custom guards (JwtAuthGuard, PoliciesGuard)
 │   ├── interfaces/         # TypeScript interfaces
 │   └── validators/         # Custom validators
 ├── config/              # Configuration files
@@ -55,25 +57,40 @@ src/
 │   └── tenant.config.ts    # Tenant configuration
 ├── database/            # Migrations and seeders
 │   ├── migrations/         # Database migrations
+│   │   ├── Migration20250624191426_CreateTenantTable.ts
+│   │   ├── Migration20250624195947_CreateOrganizationTable.ts
+│   │   └── Migration20250622193541_init_data.ts  # Permissions initialization
 │   └── seeders/            # Database seeders
 ├── entities/            # Database entities
 │   ├── base.entity.ts      # Base entity class
 │   ├── organization.entity.ts
-│   ├── permission.entity.ts
-│   ├── role.entity.ts
+│   ├── permission.entity.ts  # Permission entity for CASL
+│   ├── role.entity.ts        # Role entity with permissions
 │   ├── tenant.entity.ts
 │   └── user.entity.ts
 ├── organizations/       # Organization module
+│   ├── organizations.controller.ts
+│   ├── organizations.service.ts
+│   └── policies/           # Organization-related policies
 ├── tenants/             # Tenant management module
 │   ├── tenants.module.ts   # Tenant module configuration
-│   └── tenants.interceptor.ts # Tenant filtering interceptor
+│   ├── tenants.interceptor.ts # Tenant filtering interceptor
+│   └── subscribers/        # Entity subscribers for tenant handling
 ├── users/               # User management module
 │   ├── users.controller.ts # User endpoints
 │   ├── users.service.ts    # User business logic
 │   ├── dto/                # Data transfer objects
-│   └── policies/           # User-related policies
+│   ├── policies/           # User-related policies
+│   └── validators/         # User-specific validators
 └── validators/          # Custom validators module
 ```
+
+#### Database Migrations
+
+Migrations are used to set up the database schema and initialize data:
+
+- **Migration files**: Create tables for entities
+- **init_data.ts**: Creates default permissions and roles
 
 ## Features
 
@@ -136,21 +153,98 @@ $ yarn start:prod
 
 ### Single-Tenant Architecture
 
-This boilerplate implements a single-tenant architecture where each tenant's data is isolated using MikroORM filters. The tenant context is automatically determined from the authenticated user.
+The boilerplate implements a single-tenant architecture where each tenant's data is isolated using MikroORM filters.
 
 #### Tenant Configuration
 
-The tenant system is designed to be selective about which entities are subject to tenant filtering. This is controlled through the tenant configuration:
+Tenant filtering is controlled by the tenant configuration in `tenant.config.ts`. This configuration specifies which entities should have tenant filtering applied:
 
 ```typescript
-// src/config/tenant.config.ts
 export default registerAs('tenant', () => ({
-  entities: [User, Organization], // Only these entities will have tenant filtering applied
+  entities: [User, Organization],
   domain: process.env.TENANT_DOMAIN,
 }));
 ```
 
-By specifying entities in the `entities` array, you control which data models are tenant-aware. This allows you to have both tenant-specific and global (shared across all tenants) data in your application.
+Only entities listed in the `entities` array will have tenant filtering applied. This allows you to have both tenant-specific and global data in the same database.
+
+#### Creating Tenant-Aware Entities
+
+To make an entity tenant-aware, you need to:
+
+1. Create a relationship to the Tenant entity
+2. Add the entity to the tenant configuration in `tenant.config.ts`
+
+```typescript
+// Example of a tenant-aware entity in organization.entity.ts
+@Entity({ repository: () => OrganizationRepository })
+export class Organization extends CustomBaseEntity {
+  [EntityRepositoryType]?: OrganizationRepository;
+
+  @ManyToOne({ entity: () => Tenant })
+  tenant: Tenant;
+
+  @Property()
+  name: string;
+
+  @Property({ nullable: true })
+  description?: string;
+}
+```
+
+Then add the entity to the tenant configuration:
+
+```typescript
+// In tenant.config.ts
+export default registerAs('tenant', () => ({
+  entities: [User, Organization], // Add your entity here
+}));
+```
+
+#### Accessing and Assigning Tenant
+
+The boilerplate provides a `@UserTenant()` decorator to easily access the current user's tenant in controllers:
+
+```typescript
+// Tenant decorator definition in tenant.decorator.ts
+export const UserTenant = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest();
+    return request.user.tenant;
+  },
+);
+```
+
+Usage in controllers:
+
+```typescript
+// In organizations.controller.ts
+@Post()
+create(
+  @Body() createOrganizationDto: CreateOrganizationDto,
+  @UserTenant() tenant: Tenant,
+) {
+  return this.organizationsService.create(createOrganizationDto, tenant);
+}
+```
+
+In the service, you can then assign the tenant to the new entity:
+
+```typescript
+// In organizations.service.ts
+async create(createOrganizationDto: CreateOrganizationDto, tenant: Tenant) {
+    const organization = this.repo.create({
+      ...createOrganizationDto,
+      tenant,
+    });
+
+    await this.em.flush();
+    return organization;
+
+}
+```
+
+This ensures that all created entities are properly associated with the current user's tenant.
 
 #### Tenant Interceptor
 
@@ -174,9 +268,7 @@ export class TenantInterceptor implements NestInterceptor {
     ]);
     const { user } = request;
 
-    // Skip tenant filtering for public routes
     if (isPublic) return next.handle();
-    
     if (!user) throw new InternalServerErrorException('User not found');
     const tenant = user.tenant as Tenant;
     if (!tenant) throw new InternalServerErrorException('Tenant not found');
@@ -184,10 +276,9 @@ export class TenantInterceptor implements NestInterceptor {
     this.em.addFilter(
       'tenant',
       (args) => ({ tenant: args.tenantId }),
-      this.tenantConfigService.entities, // Only apply to these entities
+      this.tenantConfigService.entities,
     );
 
-    // Set the current tenant ID for the filter
     this.em.setFilterParams('tenant', { tenantId: tenant.id });
     return next.handle();
   }
@@ -313,6 +404,68 @@ Response:
 ### Authorization with CASL
 
 The boilerplate uses CASL for fine-grained authorization. Policies are defined for each action on resources, allowing for sophisticated permission control.
+
+#### Permission System
+
+The permission system is built on CASL and uses database entities to store and manage permissions:
+
+- **permission.entity.ts**: Defines the Permission entity with fields for name, action, and subject
+- **role.entity.ts**: Defines roles that contain collections of permissions
+- **Migration20250622193541_init_data.ts**: Initializes the database with default permissions and roles
+- **casl-ability.factory.ts**: Defines the Subjects enum that lists all resources that can be protected
+
+```typescript
+// Subjects enum in casl-ability.factory.ts
+export enum Subjects {
+  User = 'User',
+  Role = 'Role',
+  Permission = 'Permission',
+  Organization = 'Organization',
+}
+```
+
+When adding a new entity that needs authorization, you must add it to the Subjects enum.
+
+```typescript
+// Example of permission entity
+@Entity()
+export class Permission extends CustomBaseEntity {
+  @Property({ unique: true })
+  name: string;
+
+  @Property({ nullable: true })
+  action: string;
+
+  @Property({ nullable: true })
+  subject: string;
+
+  @ManyToMany(() => Role, 'permissions')
+  roles = new Collection<Role>(this);
+}
+```
+
+When adding new features that require permissions, you need to:
+
+1. Add new permission entries in the init_data migration
+2. Define the permission with action (e.g., 'read', 'create') and subject (e.g., 'User', 'Organization')
+3. Assign the permission to appropriate roles
+
+```typescript
+// Example from init_data migration
+const readOrganizationPermission = em.create(Permission, {
+  name: 'read:organization',
+  action: 'read',
+  subject: 'Organization',
+});
+
+// Later in the migration, assign to roles
+userRole.permissions.add(
+  readOwnUserPermission,
+  updateOwnUserPermission,
+  readOrganizationPermission,
+  readOwnOrganizationPermission,
+);
+```
 
 #### Policy System Architecture
 
@@ -583,52 +736,6 @@ app.useLogger(app.get(Logger));
 
 // In app.module.ts
 LoggerModule.forRootAsync(pinoLoggerConfig.asProvider()),
-```
-
-## Project Structure
-
-```
-src/
-├── app.module.ts         # Main application module
-├── main.ts              # Application entry point
-├── auth/                # Authentication module
-│   ├── auth.controller.ts   # Authentication endpoints
-│   ├── auth.service.ts      # Authentication business logic
-│   ├── jwt.strategy.ts      # JWT authentication strategy
-│   └── local.strategy.ts    # Local authentication strategy
-├── casl/                # Authorization module
-│   └── casl.module.ts       # CASL configuration
-├── common/              # Shared utilities and decorators
-│   ├── decorators/         # Custom decorators
-│   ├── factories/          # Factory classes
-│   ├── guards/             # Custom guards
-│   ├── interfaces/         # TypeScript interfaces
-│   └── validators/         # Custom validators
-├── config/              # Configuration files
-│   ├── auth.config.ts      # Authentication configuration
-│   ├── database.config.ts  # Database configuration
-│   ├── mikro-orm.config.ts # MikroORM configuration
-│   └── tenant.config.ts    # Tenant configuration
-├── database/            # Migrations and seeders
-│   ├── migrations/         # Database migrations
-│   └── seeders/            # Database seeders
-├── entities/            # Database entities
-│   ├── base.entity.ts      # Base entity class
-│   ├── organization.entity.ts
-│   ├── permission.entity.ts
-│   ├── role.entity.ts
-│   ├── tenant.entity.ts
-│   └── user.entity.ts
-├── organizations/       # Organization module
-├── tenants/             # Tenant management module
-│   ├── tenants.module.ts   # Tenant module configuration
-│   └── tenants.interceptor.ts # Tenant filtering interceptor
-├── users/               # User management module
-│   ├── users.controller.ts # User endpoints
-│   ├── users.service.ts    # User business logic
-│   ├── dto/                # Data transfer objects
-│   └── policies/           # User-related policies
-└── validators/          # Custom validators module
 ```
 
 ## Contributing
