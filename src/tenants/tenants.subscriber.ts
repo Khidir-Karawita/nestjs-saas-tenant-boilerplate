@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { EventArgs, EventSubscriber } from '@mikro-orm/core';
+import { EntityName, EventArgs, EventSubscriber } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/mariadb';
 import { Tenant } from 'src/entities/tenant.entity';
 import { ConfigType } from '@nestjs/config';
@@ -15,6 +15,9 @@ export class TenantSubscriber implements EventSubscriber<Tenant> {
     em.getEventManager().registerSubscriber(this);
   }
 
+  getSubscribedEntities(): EntityName<Tenant>[] {
+    return [Tenant];
+  }
   beforeCreate(args: EventArgs<Tenant>): void | Promise<void> {
     args.entity.domain =
       args.entity.domain + '.' + this.tenantConfigService.domain!;
