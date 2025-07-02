@@ -111,7 +111,7 @@ Migrations are used to set up the database schema and initialize data:
 - Node.js (v18+)
 - Yarn
 - MariaDB
-  
+
 ### Installation
 
 ```bash
@@ -203,120 +203,42 @@ export default registerAs('tenant', () => ({
 
 #### Accessing and Assigning Tenant
 
-The boilerplate provides a `@UserTenant()` decorator to easily access the current user's tenant in controllers:
+The boilerplate now uses a fully automated approach for tenant context and assignment:
+
+- **Tenant Context:** The current tenant is set in a request-scoped context using [`nestjs-cls`](https://github.com/avkonst/nestjs-cls) during authentication (see `JwtStrategy`).
+- **Automatic Assignment:** A MikroORM subscriber (`TenantAwareSubscriber`) automatically assigns the current tenant to all new tenant-aware entities. You do **not** need to manually pass or assign the tenant in your controller or service methods.
+- **How it works:**
+  - When a user is authenticated, their tenant is stored in the CLS context.
+  - When a new entity is created, the subscriber sets the `tenant` property from the CLS context.
+  - Tenant filtering is enforced globally via a NestJS interceptor and MikroORM filter.
+
+**Example:**
 
 ```typescript
-// Tenant decorator definition in tenant.decorator.ts
-export const UserTenant = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest();
-    return request.user.tenant;
-  },
-);
+// In your service, just create the entity as usual:
+const organization = this.repo.create(createOrganizationDto);
+await this.em.flush();
+// The tenant will be set automatically by the subscriber.
 ```
 
-Usage in controllers:
+**Note:**
+The list of tenant-aware entities is managed in `src/config/tenant.config.ts` under the `entities` array.
 
-```typescript
-// In organizations.controller.ts
-@Post()
-create(
-  @Body() createOrganizationDto: CreateOrganizationDto,
-  @UserTenant() tenant: Tenant,
-) {
-  return this.organizationsService.create(createOrganizationDto, tenant);
-}
-```
+**How the automation works in code:**
 
-In the service, you can then assign the tenant to the new entity:
-
-```typescript
-// In organizations.service.ts
-async create(createOrganizationDto: CreateOrganizationDto, tenant: Tenant) {
-    const organization = this.repo.create({
-      ...createOrganizationDto,
-      tenant,
-    });
-
-    await this.em.flush();
-    return organization;
-
-}
-```
-
-This ensures that all created entities are properly associated with the current user's tenant.
-
-#### Tenant Control Decorators
-
-The boilerplate provides two decorators to control tenant filtering behavior:
-
-1. **@Public()**: Skips both authentication and tenant filtering for routes that should be publicly accessible.
-2. **@SkipTenant()**: Skips only tenant filtering but still requires authentication. Useful for admin routes that need to access data across tenants.
-
-```typescript
-// Skip tenant decorator definition
-export const SKIP_TENANT_KEY = 'skipTenant';
-export const SkipTenant = () => SetMetadata(SKIP_TENANT_KEY, true);
-```
-
-Usage example:
-
-```typescript
-// Skip tenant filtering but still require authentication
-@SkipTenant()
-@Get('admin/all-organizations')
-findAllAcrossTenants() {
-  // This will return organizations from all tenants
-  return this.organizationsService.findAll();
-}
-```
-
-#### Tenant Interceptor
-
-The `TenantInterceptor` automatically applies tenant filtering to database queries, but only for the entities specified in the tenant configuration. It respects both the `@Public()` and `@SkipTenant()` decorators:
-
-```typescript
-@Injectable()
-export class TenantInterceptor implements NestInterceptor {
-  constructor(
-    private readonly reflector: Reflector,
-    private readonly em: EntityManager,
-    @Inject(tenantConfig.KEY)
-    private readonly tenantConfigService: ConfigType<typeof tenantConfig>,
-  ) {}
-
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
-    const request = context.switchToHttp().getRequest();
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-
-    if (isPublic) return next.handle();
-
-    const shouldSkipTenant = this.reflector.getAllAndOverride<boolean>(
-      SKIP_TENANT_KEY,
-      [context.getHandler(), context.getClass()],
-    );
-    if (shouldSkipTenant) return next.handle();
-
-    const { user } = request;
-
-    if (!user) throw new InternalServerErrorException('User not found');
-    const tenant = user.tenant as Tenant;
-    if (!tenant) throw new InternalServerErrorException('Tenant not found');
-
-    this.em.addFilter(
-      'tenant',
-      (args) => ({ tenant: args.tenantId }),
-      this.tenantConfigService.entities,
-    );
-
-    this.em.setFilterParams('tenant', { tenantId: tenant.id });
-    return next.handle();
+- The `JwtStrategy` sets the current user's tenant in the CLS context after authentication:
+  ```typescript
+  if (user) this.cls.set('tenant', user.tenant);
+  ```
+- The `TenantAwareSubscriber` listens for entity creation events and assigns the tenant from the CLS context:
+  ```typescript
+  beforeCreate(args: EventArgs<any>): void | Promise<void> {
+    args.entity.tenant = this.cls.get('tenant');
   }
-}
-```
+  ```
+- The `TenantInterceptor` applies tenant filtering to all queries for tenant-aware entities, using the tenant from the authenticated user.
+
+This approach ensures tenant isolation, security, and eliminates the need for manual tenant handling in your business logic.
 
 ### Authentication
 

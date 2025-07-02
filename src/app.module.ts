@@ -18,8 +18,15 @@ import { CaslModule } from './casl/casl.module';
 import { LoggerModule } from 'pino-nestjs';
 import { TenantModule } from './tenants/tenants.module';
 import { OrganizationsModule } from './organizations/organizations.module';
+import { ClsModule } from 'nestjs-cls';
 @Module({
   imports: [
+    ClsModule.forRoot({
+      global: true,
+      middleware: {
+        mount: true,
+      },
+    }),
     ConfigModule.forRoot({
       envFilePath: ['.env.development.local', '.env'],
       isGlobal: true,

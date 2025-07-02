@@ -18,19 +18,14 @@ import { ReadOrganizationPolicyHandler } from './policies/read-organization.poli
 import { ReadAnyOrganizationPolicyHandler } from './policies/read-any-organization.policy';
 import { UpdateOrganizationPolicyHandler } from './policies/update-organization.policy';
 import { DeleteOrganizationPolicyHandler } from './policies/delete-organization.policy';
-import { UserTenant } from 'src/common/decorators/requests/tenant.decorator';
-import { Tenant } from 'src/entities/tenant.entity';
 
 @Controller('organizations')
 export class OrganizationsController {
   constructor(private readonly organizationsService: OrganizationsService) {}
 
   @Post()
-  create(
-    @Body() createOrganizationDto: CreateOrganizationDto,
-    @UserTenant() tenant: Tenant,
-  ) {
-    return this.organizationsService.create(createOrganizationDto, tenant);
+  create(@Body() createOrganizationDto: CreateOrganizationDto) {
+    return this.organizationsService.create(createOrganizationDto);
   }
 
   @Get()

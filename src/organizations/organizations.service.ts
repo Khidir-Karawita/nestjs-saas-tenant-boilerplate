@@ -19,13 +19,10 @@ export class OrganizationsService {
     private readonly em: EntityManager,
   ) {}
 
-  async create(createOrganizationDto: CreateOrganizationDto, tenant: Tenant) {
-    console.log(tenant);
-
+  async create(createOrganizationDto: CreateOrganizationDto) {
     try {
       const organization = this.repo.create({
         ...createOrganizationDto,
-        tenant,
       });
 
       await this.em.flush();

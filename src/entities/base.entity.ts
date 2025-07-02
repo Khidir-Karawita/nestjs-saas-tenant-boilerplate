@@ -6,7 +6,7 @@ import {
 } from '@mikro-orm/core';
 
 export abstract class CustomBaseEntity {
-  [OptionalProps]?: 'createdAt' | 'updatedAt';
+  [OptionalProps]?: 'createdAt' | 'updatedAt' | 'tenant';
   @PrimaryKey({ type: new BigIntType('bigint') })
   id: number;
 
