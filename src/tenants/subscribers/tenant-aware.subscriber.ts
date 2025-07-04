@@ -1,11 +1,12 @@
 import { EntityName, EventArgs, EventSubscriber } from '@mikro-orm/core';
 import { EntityManager } from '@mikro-orm/mariadb';
-import { Inject, Injectable, Logger, Scope } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigType } from '@nestjs/config';
 import tenantConfig from 'src/config/tenant.config';
 import { User } from 'src/entities/user.entity';
 import { ClsService } from 'nestjs-cls';
 
+@Injectable()
 export class TenantAwareSubscriber implements EventSubscriber<any> {
   private readonly logger = new Logger(TenantAwareSubscriber.name);
 
