@@ -22,7 +22,7 @@ export class DatabaseSeeder extends Seeder {
           new Tenant(user.username + Math.random().toString() + '.test.app'),
         )!;
       })
-      .create(20);
+      .create(5);
     em.create(User, {
       username: 'admin',
       email: 'admin@admin.com',
