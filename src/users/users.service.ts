@@ -15,6 +15,10 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import * as bcrypt from 'bcrypt';
 import { Tenant } from 'src/entities/tenant.entity';
 
+/**
+ * Users service that handles user-related business logic.
+ * Provides CRUD operations for user entities with password hashing and tenant management.
+ */
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
@@ -25,6 +29,12 @@ export class UsersService {
     private readonly em: EntityManager,
   ) {}
 
+  /**
+   * Creates a new user with hashed password and default role.
+   * @param {CreateUserDto} createUserDto - The user creation data.
+   * @returns {Promise<User>} The newly created user.
+   * @throws {InternalServerErrorException} When default role is not found.
+   */
   async create(createUserDto: CreateUserDto) {
     const role = await this.roleRepo.findOne({ name: 'user' });
     const { password, domain, ...rest } = createUserDto;
@@ -43,16 +53,35 @@ export class UsersService {
     return user;
   }
 
+  /**
+   * Retrieves all users from the database.
+   * @returns {Promise<User[]>} Array of all users.
+   */
   findAll() {
     return this.repo.findAll();
   }
 
+  /**
+   * Finds a user by ID with optional population options.
+   * @param {Object} params - The search parameters.
+   * @param {number} params.id - The user ID to find.
+   * @param {FindOneOptions<User>} [params.options] - Optional MikroORM find options.
+   * @returns {Promise<User>} The found user.
+   */
   findOne({ id, options }: { id: number; options?: FindOneOptions<User> }) {
     if (options) {
       return this.repo.findOne(id, options);
     }
     return this.repo.findOne(id);
   }
+
+  /**
+   * Finds a user by username with optional population options.
+   * @param {Object} params - The search parameters.
+   * @param {string} params.username - The username to find.
+   * @param {FindOneOptions<User>} [params.options] - Optional MikroORM find options.
+   * @returns {Promise<User>} The found user.
+   */
   findOneWithUsername({
     username,
     options,
@@ -62,6 +91,15 @@ export class UsersService {
   }) {
     return this.repo.findOne({ username }, options);
   }
+
+  /**
+   * Updates an existing user by ID.
+   * @param {Object} params - The update parameters.
+   * @param {number} params.id - The user ID to update.
+   * @param {UpdateUserDto} params.updateUserDto - The user update data.
+   * @returns {Promise<User>} The updated user.
+   * @throws {BadRequestException} When user is not found.
+   */
   async update({
     id,
     updateUserDto,
@@ -79,6 +117,13 @@ export class UsersService {
     return user;
   }
 
+  /**
+   * Removes a user by ID.
+   * @param {Object} params - The removal parameters.
+   * @param {number} params.id - The user ID to remove.
+   * @returns {Promise<User>} The removed user.
+   * @throws {BadRequestException} When user is not found.
+   */
   async remove({ id }: { id: number }) {
     const user = await this.repo.findOne(id);
     if (!user) {
