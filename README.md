@@ -103,6 +103,7 @@ Migrations are used to set up the database schema and initialize data:
 - **Logging**: Structured logging with Pino
 - **Rate Limiting**: API rate limiting with @nestjs/throttler
 - **API Versioning**: Built-in API versioning
+- **JSDoc Documentation**: Comprehensive JSDoc documentation for all controllers and services
 
 ## Getting Started
 
