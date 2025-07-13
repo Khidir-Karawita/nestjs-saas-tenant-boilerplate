@@ -19,15 +19,29 @@ import { ReadAnyOrganizationPolicyHandler } from './policies/read-any-organizati
 import { UpdateOrganizationPolicyHandler } from './policies/update-organization.policy';
 import { DeleteOrganizationPolicyHandler } from './policies/delete-organization.policy';
 
+/**
+ * Organizations controller that handles organization management operations.
+ * Provides CRUD endpoints for organization entities with policy-based authorization.
+ */
 @Controller('organizations')
 export class OrganizationsController {
   constructor(private readonly organizationsService: OrganizationsService) {}
 
+  /**
+   * Creates a new organization.
+   * @param {CreateOrganizationDto} createOrganizationDto - The organization creation data.
+   * @returns {Promise<Organization>} The newly created organization.
+   */
   @Post()
   create(@Body() createOrganizationDto: CreateOrganizationDto) {
     return this.organizationsService.create(createOrganizationDto);
   }
 
+  /**
+   * Retrieves all organizations in the system.
+   * Requires authorization through policies guard.
+   * @returns {Promise<Organization[]>} Array of all organizations.
+   */
   @Get()
   @UseGuards(PoliciesGuard)
   @CheckPolicies(new ReadAnyOrganizationPolicyHandler())
@@ -35,6 +49,12 @@ export class OrganizationsController {
     return this.organizationsService.findAll();
   }
 
+  /**
+   * Retrieves a specific organization by ID.
+   * Requires authorization through policies guard.
+   * @param {string} id - The organization ID to retrieve.
+   * @returns {Promise<Organization>} The organization with populated tenant.
+   */
   @Get(':id')
   @UseGuards(PoliciesGuard)
   @CheckPolicies(new ReadOrganizationPolicyHandler())
@@ -45,6 +65,13 @@ export class OrganizationsController {
     });
   }
 
+  /**
+   * Updates a specific organization by ID.
+   * Requires authorization through policies guard.
+   * @param {string} id - The organization ID to update.
+   * @param {UpdateOrganizationDto} updateOrganizationDto - The organization update data.
+   * @returns {Promise<Organization>} The updated organization.
+   */
   @Patch(':id')
   @UseGuards(PoliciesGuard)
   @CheckPolicies(new UpdateOrganizationPolicyHandler())
@@ -58,6 +85,12 @@ export class OrganizationsController {
     });
   }
 
+  /**
+   * Removes a specific organization by ID.
+   * Requires authorization through policies guard.
+   * @param {string} id - The organization ID to remove.
+   * @returns {Promise<Organization>} The removed organization.
+   */
   @Delete(':id')
   @UseGuards(PoliciesGuard)
   @CheckPolicies(new DeleteOrganizationPolicyHandler())
